@@ -1,0 +1,81 @@
+import tkinter as tk
+from tkinter import messagebox
+import json
+import os
+
+TASKS_FILE = "tasks.json"
+
+def load_tasks():
+    if os.path.exists(TASKS_FILE):
+        with open(TASKS_FILE, 'r') as file:
+            return json.load(file)
+    return []
+
+def save_tasks():
+    with open(TASKS_FILE, 'w') as file:
+        json.dump(tasks, file)
+
+def add_task():
+    task_text = task_entry.get()
+    if task_text:
+        tasks.append({"task": task_text, "done": False})
+        update_task_list()
+        save_tasks()
+        task_entry.delete(0, tk.END)
+    else:
+        messagebox.showwarning("Input Error", "Please enter a task.")
+
+def mark_complete():
+    selected = listbox.curselection()
+    if selected:
+        index = selected[0]
+        tasks[index]["done"] = True
+        update_task_list()
+        save_tasks()
+    else:
+        messagebox.showwarning("Selection Error", "Please select a task.")
+
+def delete_task():
+    selected = listbox.curselection()
+    if selected:
+        index = selected[0]
+        del tasks[index]
+        update_task_list()
+        save_tasks()
+    else:
+        messagebox.showwarning("Selection Error", "Please select a task.")
+
+def update_task_list():
+    listbox.delete(0, tk.END)
+    for index, task_obj in enumerate(tasks):
+        task_text = task_obj["task"]
+        if task_obj["done"]:
+            task_text += " ✔️"
+        listbox.insert(tk.END, f"{index + 1}. {task_text}")
+
+root = tk.Tk()
+root.title("To-Do List App")
+root.geometry("400x400")
+
+task_entry = tk.Entry(root, width=30)
+task_entry.pack(pady=10)
+
+add_button = tk.Button(root, text="Add Task", command=add_task)
+add_button.pack()
+
+listbox = tk.Listbox(root, width=45, height=10)
+listbox.pack(pady=10)
+
+complete_button = tk.Button(root, text="Mark as Complete", command=mark_complete)
+complete_button.pack(pady=5)
+
+delete_button = tk.Button(root, text="Delete Task", command=delete_task)
+delete_button.pack(pady=5)
+
+exit_button = tk.Button(root, text="Exit", command=lambda: root.destroy())
+exit_button.pack(pady=10)
+
+tasks = load_tasks()
+update_task_list()
+
+root.mainloop()
